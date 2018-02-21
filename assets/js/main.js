@@ -21,18 +21,17 @@ function displayGifs() {
 
             // Storing the rating data
             var rating = response.data[a].rating;
-            console.log(response);
-
             // Creating an element to have the rating displayed
             var pRating = $("<p>").text("Rating: " + rating);
-
             // Displaying the rating
             gifDiv.append(pRating);
 
             //Creating an image for the gif
             var gifImg = $("<img>");
-
-            
+            // Fetching the image
+            gifImg.attr("src", response.data[a].images.original_still.url);
+            //Displaying the image
+            gifDiv.append(gifImg);
 
             // Putting the entire gif above the previous gif
             $("#gifs-view").prepend(gifDiv);
