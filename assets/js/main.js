@@ -1,50 +1,54 @@
+//Below, I try cover four main processes:
+//1. AJAX call to the API and displaying (prepend) gif
+//2. Starting and stopping the gif's animation per click
+//3. Displaying buttons from the celebrityGifs array
+//4. Creating new buttons per user's form entry
+
 $(document).ready(function () {
 
     // Initial array of gifs
     var celebrityGifs = ["Bill Murray", "Leo DiCaprio", "Michael B. Jordan", "Leslie Jones"];
 
-    // Function for dumping the JSON content for each button into the div
-    function displayGifs() {
+    //The buttons that appear (new and existing) on the page starts the function
+    $("#buttons-view").on("click", function () {
 
-        $("button").on("click", function () {
+        var gif = $(this).attr("data-name");
+        var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + gif + "&api_key=niNkgKdPVBHsWcHSnD4iSleAqH99HRaJ&limit=10";
+        $.ajax({
+            url: queryURL,
+            method: "GET"
+        })
+            .then(function (response) {
+                console.log(response)
 
-            var gif = $(this).attr("data-name");
-            var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + gif + "&api_key=niNkgKdPVBHsWcHSnD4iSleAqH99HRaJ&limit=10";
-            $.ajax({
-                url: queryURL,
-                method: "GET"
-            })
-                .then(function (response) {
-                    //This was added from exercise 13
-                    var results = response.data;
+                //This was added from exercise 13
+                var results = response.data;
 
-                    for (var j = 0; j < results.length; j++); {
+                for (var j = 0; j < results.length; j++); {
 
-                        // Creating a div to hold the gif
-                        var gifDiv = $("<div class='gif'>");
+                    // Creating a div to hold the gif
+                    var gifDiv = $("<div class='gif'>");
 
-                        // Storing the rating data
-                        var rating = results[j].rating;
-                        // Creating an element to have the rating displayed
-                        var pRating = $("<p>").text("Rating: " + rating);
+                    // Storing the rating data
+                    var rating = results[j].rating;
+                    // Creating an element to have the rating displayed
+                    var pRating = $("<p>").text("Rating: " + rating);
 
-                        //Creating an image for the gif
-                        var gifImg = $("<img>");
-                        // Fetching the image
-                        gifImg.attr("src", results[j].images.original_still.url);
+                    //Creating an image for the gif
+                    var gifImg = $("<img>");
+                    // Fetching the image
+                    gifImg.attr("src", results[j].images.original_still.url);
 
-                        // Displaying the rating
-                        gifDiv.prepend(pRating);
-                        //Displaying the image
-                        gifDiv.prepend(gifImg);
+                    // Displaying the rating
+                    gifDiv.prepend(pRating);
+                    //Displaying the image
+                    gifDiv.prepend(gifImg);
 
-                        // Putting the entire gif above the previous gif
-                        $("#gifs-view").prepend(gifDiv);
-                    }
-                });
-        });
-
-    }
+                    // Putting the entire gif above the previous gif
+                    $("#gifs-view").prepend(gifDiv);
+                }
+            });
+    });
 
 
     // Function for displaying buttons
@@ -70,7 +74,7 @@ $(document).ready(function () {
         }
     }
 
-    //On click event for gif button
+    //Creating new buttons
     $("#add-gif").on("click", function (event) {
         //Prevent default behavior
         event.preventDefault();
@@ -82,13 +86,9 @@ $(document).ready(function () {
         celebrityGifs.push(gif);
         console.log(celebrityGifs)
 
-        // Calling renderButtons which handles the processing of our movie array
+        // Calling renderButtons which handles the processing of our array
         renderButtons();
     });
-
-    // Function for displaying the gif info
-    // Using $(document).on to add event listeners to dynamically generated elements
-    $(document).on("click", ".gif", displayGifs);
 
     // Calling the renderButtons function to display the initial buttons
     renderButtons();
