@@ -9,11 +9,15 @@ $(document).ready(function () {
     // Initial array of gifs
     var celebrityGifs = ["Bill Murray", "Leo DiCaprio", "Michael B. Jordan", "Leslie Jones"];
 
-    //The buttons that appear (new and existing) on the page starts the function
-    $("#buttons-view").on("click", function () {
+    function displayImg() {
+
+        //The buttons that appear (new and existing) on the page starts the function
+        $("#gifs-view").empty();
 
         var gif = $(this).attr("data-name");
-        var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + gif + "&api_key=niNkgKdPVBHsWcHSnD4iSleAqH99HRaJ&limit=10";
+        var limit = 10;
+        var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + gif + "&api_key=niNkgKdPVBHsWcHSnD4iSleAqH99HRaJ&limit=" + limit;
+
         $.ajax({
             url: queryURL,
             method: "GET"
@@ -21,34 +25,55 @@ $(document).ready(function () {
             .then(function (response) {
                 console.log(response)
 
-                //This was added from exercise 13
-                var results = response.data;
-
-                for (var j = 0; j < results.length; j++); {
+                for (var j = 0; j < limit; j++); {
 
                     // Creating a div to hold the gif
                     var gifDiv = $("<div class='gif'>");
 
-                    // Storing the rating data
-                    var rating = results[j].rating;
-                    // Creating an element to have the rating displayed
-                    var pRating = $("<p>").text("Rating: " + rating);
-
                     //Creating an image for the gif
                     var gifImg = $("<img>");
-                    // Fetching the image
-                    gifImg.attr("src", results[j].images.original_still.url);
-
-                    // Displaying the rating
-                    gifDiv.prepend(pRating);
+                    // Fetching the image and setting up various states, see exercise 15
+                    gifImg.attr("src", response.data[j].images.original_still.url);
+                    gifImg.attr("data-still", response.data[j].images.original_still.url);
+                    gifImg.attr("data-animate", response.data[j].images.original.url);
+                    gifImg.attr("data-state", "still");
+                    gifImg.attr("class", "gif");
                     //Displaying the image
-                    gifDiv.prepend(gifImg);
+                    gifDiv.append(gifImg);
 
+                    // Storing the rating data
+                    var rating = response.data[j].rating;
+                    // Creating an element to have the rating displayed
+                    var pRating = $("<p>").text("Rating: " + rating);
+                    // Displaying the rating
+                    gifDiv.append(pRating);
+                 
                     // Putting the entire gif above the previous gif
-                    $("#gifs-view").prepend(gifDiv);
+                    $("#gifs-view").append(gifDiv);
+
                 }
             });
-    });
+
+    };
+
+    //Function for the gif's image state, see exercise 15
+    function stateChange(){
+        
+        var state = $(this).attr("data-state");
+        var animateImage = $(this).attr("data-animate");
+        var stillImage = $(this).attr("data-still");
+
+        if (state === "still") {
+            $(this).attr("src", animateImage);
+            $(this).attr("data-state", "animate");
+        }
+
+        else if (state === "animate") {
+            $(this).attr("src", stillImage);
+            $(this).attr("data-state", "still");
+        }
+    }
+
 
 
     // Function for displaying buttons
@@ -64,7 +89,7 @@ $(document).ready(function () {
             // Then generate buttons for each gif in array
             var a = $("<button>");
             // Adding a class
-            a.addClass("gif")
+            a.addClass("btnInput")
             // Adding a data-attribute
             a.attr("data-name", celebrityGifs[i]);
             // Providing the initial button text
@@ -81,6 +106,7 @@ $(document).ready(function () {
 
         //Grab gif from input box
         var gif = $("#gif-input").val().trim();
+        form.reset();
 
         // Adding the gif from the textbox to our array
         celebrityGifs.push(gif);
@@ -92,5 +118,8 @@ $(document).ready(function () {
 
     // Calling the renderButtons function to display the initial buttons
     renderButtons();
+
+    $(document).on("click", ".btnInput", displayImg);
+    $(document).on("click", ".gif", stateChange);
 
 });
