@@ -9,74 +9,66 @@ $(document).ready(function () {
     // Initial array of gifs
     var celebrityGifs = ["Bill Murray", "Leo DiCaprio", "Michael B. Jordan", "Leslie Jones"];
 
+    //GET function for information from API
     function displayImg() {
 
-        //The buttons that appear (new and existing) on the page starts the function
-        $("#gifs-view").empty();
-
         var gif = $(this).attr("data-name");
-        var limit = 10;
-        var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + gif + "&api_key=niNkgKdPVBHsWcHSnD4iSleAqH99HRaJ&limit=" + limit;
+        var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + gif + "&api_key=niNkgKdPVBHsWcHSnD4iSleAqH99HRaJ&limit=10";
 
         $.ajax({
             url: queryURL,
             method: "GET"
         })
-            .then(function (response) {
+            .done(function (response) {
                 console.log(response)
+
+                $("#gifs-view").empty();
 
                 // Storing the data from the AJAX request in the results variable, exercise 14
                 var results = response.data;
 
-                for (var j = 0; j < limit; j++); {
+                for (var j = 0; j < results.length; j++); {
 
                     // Creating a div to hold the gif
                     var gifDiv = $("<div class='holdGif'>");
-
-                    //Creating an image for the gif
-                    var gifImg = $("<img>");
-                    // Fetching the image and setting up various states, see exercise 15
-                    gifImg.attr("src", results[j].images.original_still.url);
-                    gifImg.attr("data-still", results[j].images.original_still.url);
-                    gifImg.attr("data-animate", results[j].images.original.url);
-                    gifImg.attr("data-state", "still");
-                    gifImg.attr("class", "gif");
-                    //Displaying the image
-                    gifDiv.append(gifImg);
 
                     // Storing the rating data
                     var rating = results[j].rating;
                     // Creating an element to have the rating displayed
                     var pRating = $("<p>").text("Rating: " + rating);
+
+                    var urlStill = results[j].images.fixed_height_still.url;
+                    var urlPlay = results[j].images.fixed_height.url;
+
+                    //Creating an image, class, etc. for the gif
+                    var gifImg = $("<img>").addClass("gif").attr("src", urlStill).attr("data-still", urlStill).attr("data-animate", urlPlay).attr("data-state", "still");
+
+                    //Displaying the image
+                    gifDiv.append(gifImg);
                     // Displaying the rating
                     gifDiv.append(pRating);
 
                     // Putting the entire gif above the previous gif
-                    $("#gifs-view").prepend(gifDiv);
+                    $("#gifs-view").append(gifDiv);
 
                 }
+                $(".gif").on("click", function () {
+                    var state = $(this).attr("data-state");
+
+                    if (state === "still") {
+                        $(this).attr("src", $(this).attr("data-animate"));
+                        $(this).attr("data-state", "animate");
+                    }
+
+                    else {
+                        $(this).attr("src", $(this).attr("data-still"));
+                        $(this).attr("data-state", "still");
+                    }
+
+                });
+
             });
-
     };
-
-    //Function for the gif's image state, see exercise 15
-    function stateChange() {
-
-        var state = $(this).attr("data-state");
-        var animateImage = $(this).attr("data-animate");
-        var stillImage = $(this).attr("data-still");
-
-        if (state === "still") {
-            $(this).attr("src", animateImage);
-            $(this).attr("data-state", "animate");
-        }
-
-        else if (state === "animate") {
-            $(this).attr("src", stillImage);
-            $(this).attr("data-state", "still");
-        }
-    }
-
 
     // Function for displaying buttons
     function renderButtons() {
@@ -121,8 +113,5 @@ $(document).ready(function () {
 
     // Calling the renderButtons function to display the initial buttons
     renderButtons();
-
-    $(document).on("click", "#input", displayImg);
-    $(document).on("click", ".gif", stateChange);
 
 });
